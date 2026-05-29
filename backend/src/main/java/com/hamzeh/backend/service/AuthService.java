@@ -13,10 +13,12 @@ import com.hamzeh.backend.repository.UserRepository;
 public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     public void register(RegisterRequest request) {
@@ -35,14 +37,20 @@ public class AuthService {
         userRepository.save(user);
     }
 
-    public boolean login(LoginRequest request) {
+    public String login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElse(null);
 
         if (user == null) {
-            return false;
+            return null;
         }
 
-        return passwordEncoder.matches(request.getPassword(), user.getPassword());
+        boolean passwordMatches = passwordEncoder.matches(request.getPassword(), user.getPassword());
+
+        if (!passwordMatches) {
+            return null;
+        }
+
+        return jwtService.generateToken(user.getEmail());
     }
 }

@@ -1,10 +1,14 @@
 import React, { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { useAuth } from "../context/AuthContext"
 
 export default function LoginPage() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [errors, setErrors] = useState<Record<string, string>>({})
     const [message, setMessage] = useState('')
+    const { login } = useAuth()
+    const navigate = useNavigate()
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setErrors({})
@@ -29,7 +33,8 @@ export default function LoginPage() {
             setEmail('')
             setPassword('')
             setMessage(data.message || "Login successful")
-
+            login(data.token)
+            navigate('/profile')
         } catch {
             setErrors({ message: 'Could not connect to the server.' })
         }
